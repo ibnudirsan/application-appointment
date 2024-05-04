@@ -4,6 +4,13 @@ import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
 
 const users = ref([]);
+const editing = ref(false);
+const formValues = ref({
+    name: '',
+    email: '',
+    password: ''
+});
+const form = ref(null);
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -12,24 +19,71 @@ const getUsers = () => {
         })
 }
 
-
-const schema = yup.object({
+const createUserSchema = yup.object({
     name: yup.string().required(),
     email: yup.string().email().required(),
     password: yup.string().required().min(8)
 });
 
+const editUserSchema = yup.object({
+    name: yup.string().required(),
+    email: yup.string().email().required(),
+    password: yup.string().min(8)
+});
+
+const addUser = () => {
+    editing.value = false;
+    $('#userFormModal').modal('show');
+}
+
 const createUser = (values, { resetForm }) => {
     axios.post('/api/users', values)
         .then((response) => {
-            $('#createUserModal').modal('hide');
-            resetForm();
+            $('#userFormModal').modal('hide');
+            form.value.resetForm();
             users.value.unshift(response.data);
             getUsers();
         })
         .catch((error) => {
             console.log(error);
         })
+}
+
+const editUser = (user) => {
+    editing.value = true;
+    form.value.resetForm();
+    $('#userFormModal').modal('show');
+    formValues.value = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+    };
+};
+
+
+const updateUser = (values, { resetForm }) => {
+    axios.put('/api/users/' + formValues.value.id, values)
+        .then((response) => {
+            $('#userFormModal').modal('hide');
+            form.value.resetForm();
+            const index = users.value.findIndex((user) => user.id === response.data.id);
+            users.value[index] = response.data;
+            getUsers();
+        })
+        .catch((error) => {
+            console.log(error);
+        }).finally(() => {
+            editing.value = false;
+            form.value.resetForm();
+        }) 
+}
+
+const handleSubmit = (values) => {
+    if (editing.value) {
+        updateUser(values, { resetForm: true });
+    } else {
+        createUser(values, { resetForm: true });
+    }
 }
 
 onMounted(() => {
@@ -58,7 +112,7 @@ onMounted(() => {
 
     <div class="content">
         <div class="container-fluid">
-            <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#createUserModal">
+            <button @click="addUser" type="button" class="btn btn-primary mb-3">
                 Add User
             </button>
             <div class="card">
@@ -79,7 +133,11 @@ onMounted(() => {
                                 <td>{{ user.name }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.role }}</td>
-                                <td>-</td>
+                                <td>
+                                    <a href="#" class="btn btn-primary btn-sm" @click="editUser(user)">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -88,35 +146,43 @@ onMounted(() => {
         </div>
     </div>
 
-    <div class="modal fade" data-backdrop="static" id="createUserModal" tabindex="-1"
-        aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal fade" data-backdrop="static" id="userFormModal" tabindex="-1" aria-labelledby="userFormModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">Add User</h5>
+                    <h5 class="modal-title" id="userFormModalLabel">
+                        <span v-if="editing">Edit User</span>
+                        <span v-else>Add User</span>
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <Form @submit="createUser" :validation-schema="schema" v-slot="{ errors }">
+                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editUserSchema : createUserSchema" v-slot="{ errors }">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="name">Name</label>
-                            <Field type="text" class="form-control" id="name" name="name" :class="{ 'is-invalid': errors.name }"
-                                aria-describedby="name" placeholder="Enter Full Name" />
-                                <span class="invalid-feedback">{{ errors.name }}</span>
+                            <Field name="name" type="text" class="form-control" :class="{ 'is-invalid': errors.name }"
+                                id="name" aria-describedby="nameHelp" placeholder="Enter full name"
+                                v-model="formValues.name" />
+                            <span class="invalid-feedback">{{ errors.name }}</span>
                         </div>
+
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <Field type="email" class="form-control" id="email" name="email" :class="{ 'is-invalid': errors.email }"
-                                aria-describedby="email" placeholder="Enter Email" />
-                                <span class="invalid-feedback">{{ errors.email }}</span>
+                            <Field name="email" type="email" class="form-control"
+                                :class="{ 'is-invalid': errors.email }" id="email" aria-describedby="emailHelp"
+                                placeholder="Enter email" v-model="formValues.email" />
+                            <span class="invalid-feedback">{{ errors.email }}</span>
                         </div>
+
                         <div class="form-group">
                             <label for="password">Password</label>
-                            <Field type="password" class="form-control" id="password" name="password" :class="{ 'is-invalid': errors.password }"
-                                aria-describedby="password" placeholder="Enter Password" />
-                                <span class="invalid-feedback">{{ errors.password }}</span>
+                            <Field name="password" type="password" class="form-control"
+                                :class="{ 'is-invalid': errors.password }" id="password" placeholder="Enter password"
+                                v-model="formValues.password" />
+                            <span class="invalid-feedback">{{ errors.password }}</span>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -125,6 +191,6 @@ onMounted(() => {
                     </div>
                 </Form>
             </div>
-    </div>
+        </div>
     </div>
 </template>
