@@ -16,21 +16,26 @@ class UserController extends Controller
 
     public function store()
     {
-        return User::create([
-            'name' => request('name'),
-            'email' => request('email'),
-            'password' => bcrypt(request('password')), 
+        request()->validate([
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users']
         ]);
+            return User::create([
+                'name' => request('name'),
+                'email' => request('email'),
+                'password' => bcrypt(request('password')), 
+            ]);
     }
 
     public function update(User $user)
     {
-        $user->update([
-            'name'      => request('name'),
-            'email'     => request('email'),
-            'password'  => request('password') ? bcrypt(request('password')) : $user->password, 
+        request()->validate([
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id]
         ]);
-
-        return $user;
+            $user->update([
+                'name'      => request('name'),
+                'email'     => request('email'),
+                'password'  => request('password') ? bcrypt(request('password')) : $user->password, 
+            ]);
+                return $user;
     }
 }

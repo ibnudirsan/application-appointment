@@ -33,10 +33,11 @@ const editUserSchema = yup.object({
 
 const addUser = () => {
     editing.value = false;
+    form.value.resetForm();
     $('#userFormModal').modal('show');
 }
 
-const createUser = (values, { resetForm }) => {
+const createUser = (values, { resetForm, setErrors }) => {
     axios.post('/api/users', values)
         .then((response) => {
             $('#userFormModal').modal('hide');
@@ -45,13 +46,14 @@ const createUser = (values, { resetForm }) => {
             getUsers();
         })
         .catch((error) => {
-            console.log(error);
+            if(error.response.data.errors) {
+                setErrors(error.response.data.errors);
+            }
         })
 }
 
 const editUser = (user) => {
     editing.value = true;
-    form.value.resetForm();
     $('#userFormModal').modal('show');
     formValues.value = {
         id: user.id,
@@ -61,28 +63,28 @@ const editUser = (user) => {
 };
 
 
-const updateUser = (values, { resetForm }) => {
+const updateUser = (values, { resetForm, setErrors }) => {
     axios.put('/api/users/' + formValues.value.id, values)
         .then((response) => {
             $('#userFormModal').modal('hide');
-            form.value.resetForm();
             const index = users.value.findIndex((user) => user.id === response.data.id);
             users.value[index] = response.data;
+            editing.value = false;
+            form.value.resetForm();
             getUsers();
         })
         .catch((error) => {
-            console.log(error);
-        }).finally(() => {
-            editing.value = false;
-            form.value.resetForm();
-        }) 
+            if(error.response.data.errors) {
+                setErrors(error.response.data.errors);
+            }
+        })
 }
 
-const handleSubmit = (values) => {
+const handleSubmit = (values, actions) => {
     if (editing.value) {
-        updateUser(values, { resetForm: true });
+        updateUser(values, actions, { resetForm: true });
     } else {
-        createUser(values, { resetForm: true });
+        createUser(values, actions, { resetForm: true });
     }
 }
 
@@ -187,7 +189,9 @@ onMounted(() => {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="submit" class="btn btn-primary">
+                            {{ editing ? 'Update' : 'Save' }}
+                        </button>
                     </div>
                 </Form>
             </div>
