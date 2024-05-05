@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
+import { useToastr } from '../../../js/toastr';
 
 const users = ref([]);
 const editing = ref(false);
@@ -11,6 +12,7 @@ const formValues = ref({
     password: ''
 });
 const form = ref(null);
+const toastr = useToastr();
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -44,6 +46,7 @@ const createUser = (values, { resetForm, setErrors }) => {
             form.value.resetForm();
             users.value.unshift(response.data);
             getUsers();
+            toastr.success('User created successfully!');
         })
         .catch((error) => {
             if(error.response.data.errors) {
@@ -72,6 +75,7 @@ const updateUser = (values, { resetForm, setErrors }) => {
             editing.value = false;
             form.value.resetForm();
             getUsers();
+            toastr.success('User updated successfully!');
         })
         .catch((error) => {
             if(error.response.data.errors) {
