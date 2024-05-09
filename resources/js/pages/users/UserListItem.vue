@@ -31,6 +31,30 @@ const deleteUser = () => {
         })
 }
 
+
+const roles = ref([
+    {
+        name: 'ADMIN',
+        value: 1,
+    },
+    {
+        name: 'USER',
+        value: 2,
+    }
+]);
+
+const changeRole = (user, role) => {
+    axios.patch(`/api/users/${user.id}/change-role`, {
+        role: role
+    })
+    .then(()=>{
+        toastr.success('Role changed successfully!');
+    })
+    .catch((error) => {        
+        console.log(error);
+    })
+}
+
 </script>
 
 <template>
@@ -38,7 +62,11 @@ const deleteUser = () => {
         <td>{{ index + 1 }}</td>
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
-        <td>{{ user.role }}</td>
+        <td>
+            <select class="form-control" @change="changeRole(user, $event.target.value)">
+                <option v-for="role in roles" :value="role.value" :key="role.value" :selected="user.role === role.name">{{ role.name }}</option>
+            </select>
+        </td>
         <td>{{ formatDate(user.created_at) }}</td>
         <td>
             <a href="#" class="btn btn-primary btn-sm mr-2" @click="$emit('editUser', user)">
