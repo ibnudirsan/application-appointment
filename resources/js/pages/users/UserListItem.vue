@@ -31,10 +31,6 @@ const deleteUser = () => {
         })
 }
 
-const editUser = (user) => {
-    emit('editUser', user);
-}
-
 </script>
 
 <template>
@@ -45,7 +41,7 @@ const editUser = (user) => {
         <td>{{ user.role }}</td>
         <td>{{ formatDate(user.created_at) }}</td>
         <td>
-            <a href="#" class="btn btn-primary btn-sm mr-2" @click="editUser(user)">
+            <a href="#" class="btn btn-primary btn-sm mr-2" @click="$emit('editUser', user)">
                 <i class="fas fa-edit"></i>
             </a>
             <a href="#" class="btn btn-danger btn-sm ml-2" @click="confirmUserDelete(user)">
