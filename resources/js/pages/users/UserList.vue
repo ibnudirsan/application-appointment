@@ -3,7 +3,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../../js/toastr';
-import { formatDate } from '../../helper.js';
+import UserListItem from './UserListItem.vue';
 
 const users = ref([]);
 const editing = ref(false);
@@ -14,7 +14,6 @@ const formValues = ref({
 });
 const form = ref(null);
 const toastr = useToastr();
-const userIdBeingDelete = ref(null);
 
 const getUsers = () => {
     axios.get('/api/users')
@@ -94,22 +93,8 @@ const handleSubmit = (values, actions) => {
     }
 }
 
-const confirmUserDelete = (user) => {
-    userIdBeingDelete.value = user.id;
-    $('#deleteUserModal').modal('show');
-}
-
-const deleteUser = () => {
-    axios.delete('/api/users/' + userIdBeingDelete.value)
-        .then((response) => {
-            $('#deleteUserModal').modal('hide');
-            users.value = users.value.filter(user => user.id !== userIdBeingDelete.value);
-            getUsers();
-            toastr.success('User deleted successfully!');
-        })
-        .catch((error) => {
-            console.log(error);
-        })
+const userDeleted = (userId) => {
+    users.value = users.value.filter(user => user.id !== userId);
 }
 
 onMounted(() => {
@@ -155,21 +140,13 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(user, index) in users" :key="user.id">
-                                <td>{{ index + 1 }}</td>
-                                <td>{{ user.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.role }}</td>
-                                <td>{{ formatDate(user.created_at) }}</td>
-                                <td>
-                                    <a href="#" class="btn btn-primary btn-sm mr-2" @click="editUser(user)">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-danger btn-sm ml-2" @click="confirmUserDelete(user)">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
+                            <UserListItem v-for="(user, index) in users"
+                                    :key="user.id"
+                                    :user=user
+                                    :index=index
+                                    @edit-user="editUser"
+                                    @user-deleted="userDeleted"
+                            />
                         </tbody>
                     </table>
                 </div>
@@ -223,35 +200,6 @@ onMounted(() => {
                         </button>
                     </div>
                 </Form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" data-backdrop="static" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteUserModalLabel">
-                        <span>
-                            Delete User
-                        </span>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this user?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                        Close
-                    </button>
-                    <button @click.prevent="deleteUser" type="submit" class="btn btn-danger">
-                        Delete
-                    </button>
-                </div>
             </div>
         </div>
     </div>
