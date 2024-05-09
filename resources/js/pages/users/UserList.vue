@@ -25,6 +25,8 @@ const getUsers = (page = 1) => {
     axios.get(`/api/users?page=${page}`)
         .then((response) => {
             users.value = response.data;
+            selectedUsers.value = [];
+            selectAll.value = false;
         })
 }
 
@@ -51,7 +53,7 @@ const createUser = (values, { resetForm, setErrors }) => {
         .then((response) => {
             $('#userFormModal').modal('hide');
             form.value.resetForm();
-            users.value.unshift(response.data);
+            users.value.data.unshift(response.data);
             getUsers();
             toastr.success('User created successfully!');
         })
@@ -77,12 +79,12 @@ const updateUser = (values, { resetForm, setErrors }) => {
     axios.put('/api/users/' + formValues.value.id, values)
         .then((response) => {
             $('#userFormModal').modal('hide');
-            const index = users.value.findIndex((user) => user.id === response.data.id);
+            toastr.success('User updated successfully!');
+            const index = users.value.data.findIndex((user) => user.id === response.data.id);
             users.value[index] = response.data;
             editing.value = false;
             form.value.resetForm();
             getUsers();
-            toastr.success('User updated successfully!');
         })
         .catch((error) => {
             if(error.response.data.errors) {
@@ -135,7 +137,6 @@ const selectAllUsers = () => {
     } else {
         selectedUsers.value = [];
     }
-    console.log(selectedUsers.value);
 }
 
 const search = () => {
@@ -183,14 +184,18 @@ onMounted(() => {
     <div class="content">
         <div class="container-fluid">
             <div class="d-flex justify-content-between">
-                <div>
+                <div class="d-flex">
                     <button @click="addUser" type="button" class="btn btn-primary mb-3">
+                        <i class="fas fa-plus-circle mr-1"></i>
                         Add User
                     </button>
-
-                    <button v-if="selectedUsers.length > 0" @click="bulkDelete" type="button" class="btn btn-danger mb-3 ml-2">
-                        Deleted Selected
-                    </button>
+                    <div>
+                        <button v-if="selectedUsers.length > 0" @click="bulkDelete" type="button" class="btn btn-danger mb-3 ml-2">
+                            <i class="fas fa-trash mr-1"></i>
+                            Deleted Selected
+                        </button>
+                        <span v-if="selectedUsers.length > 0" class="ml-2">Selected {{ selectedUsers.length }} Users</span>
+                    </div>
                 </div>
                 <div>
                     <input type="text" class="form-control" v-model="searchQuery" placeholder="Search..." autofocus>
