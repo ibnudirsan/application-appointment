@@ -19,6 +19,7 @@ const form = ref(null);
 const toastr = useToastr();
 const searchQuery = ref(null);
 const selectedUsers = ref([]);
+const selectAll = ref(false);
 
 const getUsers = (page = 1) => {
     axios.get(`/api/users?page=${page}`)
@@ -120,11 +121,21 @@ const bulkDelete = () => {
     .then(response => {
         users.value.data = users.value.data.filter(user => !selectedUsers.value.includes(user.id));
         selectedUsers.value = [];
+        selectAll.value = false;
         toastr.success(response.data.message);
     })
     .catch(error => {
         console.log(error);
     })
+}
+
+const selectAllUsers = () => {
+    if (selectAll.value) {
+        selectedUsers.value = users.value.data.map(user => user.id);
+    } else {
+        selectedUsers.value = [];
+    }
+    console.log(selectedUsers.value);
 }
 
 const search = () => {
@@ -191,7 +202,7 @@ onMounted(() => {
                         <thead>
                             <tr>
                                 <th>
-                                    <input type="checkbox">
+                                    <input type="checkbox" v-model="selectAll" @change="selectAllUsers">
                                 </th>
                                 <th style="width: 10px">#</th>
                                 <th>Name</th>
@@ -209,6 +220,7 @@ onMounted(() => {
                                     @edit-user="editUser"
                                     @user-deleted="userDeleted"
                                     @toggle-selection="toggleSelection"
+                                    :select-all="selectAll"
                             />
                         </tbody>
                         <tbody v-else>

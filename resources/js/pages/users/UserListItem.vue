@@ -8,7 +8,8 @@ const toastr = useToastr();
 
 const props = defineProps({
     user: Object,
-    index: Number
+    index: Number,
+    selectAll: Boolean,
 });
 
 const emit = defineEmits(['userDeleted','editUser']);
@@ -63,7 +64,7 @@ const toggleSelection = () => {
 <template>
     <tr>
         <td>
-            <input type="checkbox" @change="toggleSelection">
+            <input type="checkbox" :checked="selectAll" @change="toggleSelection">
         </td>
         <td>{{ index + 1 }}</td>
         <td>{{ user.name }}</td>
