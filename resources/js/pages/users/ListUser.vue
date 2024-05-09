@@ -3,6 +3,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../../js/toastr';
+import { formatDate } from '../../helper.js';
 
 const users = ref([]);
 const editing = ref(false);
@@ -149,6 +150,7 @@ onMounted(() => {
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Role</th>
+                                <th>Created</th>
                                 <th>Options</th>
                             </tr>
                         </thead>
@@ -158,6 +160,7 @@ onMounted(() => {
                                 <td>{{ user.name }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.role }}</td>
+                                <td>{{ formatDate(user.created_at) }}</td>
                                 <td>
                                     <a href="#" class="btn btn-primary btn-sm mr-2" @click="editUser(user)">
                                         <i class="fas fa-edit"></i>
