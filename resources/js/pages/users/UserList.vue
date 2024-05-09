@@ -18,6 +18,7 @@ const formValues = ref({
 const form = ref(null);
 const toastr = useToastr();
 const searchQuery = ref(null);
+const selectedUsers = ref([]);
 
 const getUsers = (page = 1) => {
     axios.get(`/api/users?page=${page}`)
@@ -101,6 +102,31 @@ const userDeleted = (userId) => {
     users.value = users.value.filter(user => user.id !== userId);
 }
 
+const toggleSelection = (user) => {
+    const index = selectedUsers.value.indexOf(user.id);
+    if (index === -1) {
+        selectedUsers.value.push(user.id);
+    } else {
+        selectedUsers.value.splice(index, 1);
+    }
+}
+
+const bulkDelete = () => {
+    axios.delete('/api/users', {
+        data: {
+            ids: selectedUsers.value
+        }
+    })
+    .then(response => {
+        users.value.data = users.value.data.filter(user => !selectedUsers.value.includes(user.id));
+        selectedUsers.value = [];
+        toastr.success(response.data.message);
+    })
+    .catch(error => {
+        console.log(error);
+    })
+}
+
 const search = () => {
     axios.get('/api/users/search', {
         params: {
@@ -146,9 +172,15 @@ onMounted(() => {
     <div class="content">
         <div class="container-fluid">
             <div class="d-flex justify-content-between">
-                <button @click="addUser" type="button" class="btn btn-primary mb-3">
-                    Add User
-                </button>
+                <div>
+                    <button @click="addUser" type="button" class="btn btn-primary mb-3">
+                        Add User
+                    </button>
+
+                    <button v-if="selectedUsers.length > 0" @click="bulkDelete" type="button" class="btn btn-danger mb-3 ml-2">
+                        Deleted Selected
+                    </button>
+                </div>
                 <div>
                     <input type="text" class="form-control" v-model="searchQuery" placeholder="Search..." autofocus>
                 </div>
@@ -158,6 +190,9 @@ onMounted(() => {
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th>
+                                    <input type="checkbox">
+                                </th>
                                 <th style="width: 10px">#</th>
                                 <th>Name</th>
                                 <th>Email</th>
@@ -173,6 +208,7 @@ onMounted(() => {
                                     :index=index
                                     @edit-user="editUser"
                                     @user-deleted="userDeleted"
+                                    @toggle-selection="toggleSelection"
                             />
                         </tbody>
                         <tbody v-else>
