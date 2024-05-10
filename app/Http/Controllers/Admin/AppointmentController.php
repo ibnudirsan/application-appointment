@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Client;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Enum\appointmentStatus;
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\Validated;
 
 class AppointmentController extends Controller
 {
@@ -41,20 +43,30 @@ class AppointmentController extends Controller
             ]);
     }
 
+    public function clients()
+    {
+        return Client::latest()->get();
+    }
+
     public function store()
     {
-        request()->validate([
+        $validated = request()->validate([
+            'client_id'     => 'required',
             'title'         => 'required',
             'description'   => 'required',
+            'start_time'    => 'required',
+            'end_time'      => 'required',
+        ], [
+            'client_id.required' => 'The Client Name field is required...',
         ]);
-        
+
         $appointment = Appointment::create([
-            'title'         => request('title'),
-            'client_id'     => 1,
-            'start_time'    => now(),
-            'end_time'      => now(),
+            'title'         => $validated['title'],
+            'client_id'     => $validated['client_id'],
+            'start_time'    => $validated['start_time'],
+            'end_time'      => $validated['end_time'],
             'status'        => appointmentStatus::SCHEDULED,
-            'description'   => request('description'),
+            'description'   => $validated['description'],
         ]);
             return response()->json([
                 'message'   => 'Successfully created',
