@@ -8,7 +8,8 @@ import axios from 'axios';
 import { debounce } from 'lodash';
 import { Bootstrap4Pagination } from 'laravel-vue-pagination';
 
-const users = ref({'data':[]});
+const userIdBeingDelete = ref(null);
+const users = ref({ 'data': [] });
 const editing = ref(false);
 const formValues = ref({
     name: '',
@@ -58,7 +59,7 @@ const createUser = (values, { resetForm, setErrors }) => {
             toastr.success('User created successfully!');
         })
         .catch((error) => {
-            if(error.response.data.errors) {
+            if (error.response.data.errors) {
                 setErrors(error.response.data.errors);
             }
         })
@@ -87,7 +88,7 @@ const updateUser = (values, { resetForm, setErrors }) => {
             getUsers();
         })
         .catch((error) => {
-            if(error.response.data.errors) {
+            if (error.response.data.errors) {
                 setErrors(error.response.data.errors);
             }
         })
@@ -101,10 +102,6 @@ const handleSubmit = (values, actions) => {
     }
 }
 
-const userDeleted = (userId) => {
-    users.value = users.value.filter(user => user.id !== userId);
-}
-
 const toggleSelection = (user) => {
     const index = selectedUsers.value.indexOf(user.id);
     if (index === -1) {
@@ -114,21 +111,38 @@ const toggleSelection = (user) => {
     }
 }
 
+const confirmUserDelete = (id) => {
+    userIdBeingDelete.value = id;
+    $('#deleteUserModal').modal('show');
+}
+
+const deleteUser = () => {
+    axios.delete('/api/users/' + userIdBeingDelete.value)
+        .then((response) => {
+            $('#deleteUserModal').modal('hide');
+            toastr.success('User deleted successfully!');
+            users.value.data = users.value.data.filter(user => user.id !== userIdBeingDelete.value);
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+}
+
 const bulkDelete = () => {
     axios.delete('/api/users', {
         data: {
             ids: selectedUsers.value
         }
     })
-    .then(response => {
-        users.value.data = users.value.data.filter(user => !selectedUsers.value.includes(user.id));
-        selectedUsers.value = [];
-        selectAll.value = false;
-        toastr.success(response.data.message);
-    })
-    .catch(error => {
-        console.log(error);
-    })
+        .then(response => {
+            users.value.data = users.value.data.filter(user => !selectedUsers.value.includes(user.id));
+            selectedUsers.value = [];
+            selectAll.value = false;
+            toastr.success(response.data.message);
+        })
+        .catch(error => {
+            console.log(error);
+        })
 }
 
 const selectAllUsers = () => {
@@ -145,17 +159,17 @@ const search = () => {
             query: searchQuery.value
         }
     })
-    .then(response => {
-        users.value = response.data;
-    })
-    .catch(error => {
-        console.log(error);
-    })
+        .then(response => {
+            users.value = response.data;
+        })
+        .catch(error => {
+            console.log(error);
+        })
 }
 
 watch(searchQuery, debounce(() => {
     search();
-},1000));
+}, 1000));
 
 onMounted(() => {
     getUsers();
@@ -190,11 +204,13 @@ onMounted(() => {
                         Add User
                     </button>
                     <div>
-                        <button v-if="selectedUsers.length > 0" @click="bulkDelete" type="button" class="btn btn-danger mb-3 ml-2">
+                        <button v-if="selectedUsers.length > 0" @click="bulkDelete" type="button"
+                            class="btn btn-danger mb-3 ml-2">
                             <i class="fas fa-trash mr-1"></i>
                             Deleted Selected
                         </button>
-                        <span v-if="selectedUsers.length > 0" class="ml-2">Selected {{ selectedUsers.length }} Users</span>
+                        <span v-if="selectedUsers.length > 0" class="ml-2">Selected {{ selectedUsers.length }}
+                            Users</span>
                     </div>
                 </div>
                 <div>
@@ -219,14 +235,12 @@ onMounted(() => {
                         </thead>
                         <tbody v-if="users.data.length > 0">
                             <UserListItem v-for="(user, index) in users.data"
-                                    :key="user.id"
-                                    :user=user
-                                    :index=index
-                                    @edit-user="editUser"
-                                    @user-deleted="userDeleted"
-                                    @toggle-selection="toggleSelection"
-                                    :select-all="selectAll"
-                            />
+                                :key="user.id"
+                                :user=user :index=index
+                                @edit-user="editUser"
+                                @confirm-user-deletion="confirmUserDelete"
+                                @toggle-selection="toggleSelection"
+                                :select-all="selectAll" />
                         </tbody>
                         <tbody v-else>
                             <tr>
@@ -236,10 +250,7 @@ onMounted(() => {
                     </table>
                 </div>
             </div>
-                <Bootstrap4Pagination
-                            :data="users"
-                            @pagination-change-page="getUsers"
-                />
+            <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers" />
         </div>
     </div>
 
@@ -256,7 +267,8 @@ onMounted(() => {
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editUserSchema : createUserSchema" v-slot="{ errors }">
+                <Form ref="form" @submit="handleSubmit" :validation-schema="editing ? editUserSchema : createUserSchema"
+                    v-slot="{ errors }">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="name">Name</label>
@@ -289,6 +301,35 @@ onMounted(() => {
                         </button>
                     </div>
                 </Form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-backdrop="static" id="deleteUserModal" tabindex="-1"
+        aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteUserModalLabel">
+                        <span>
+                            Delete User
+                        </span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this user?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button @click.prevent="deleteUser" type="submit" class="btn btn-danger">
+                        Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>
