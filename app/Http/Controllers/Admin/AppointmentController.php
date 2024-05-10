@@ -40,4 +40,19 @@ class AppointmentController extends Controller
                 'color' => appointmentStatus::from($case->value)->color()
             ]);
     }
+
+    public function store()
+    {
+        $appointment = Appointment::create([
+            'title'         => request('title'),
+            'client_id'     => 1,
+            'start_time'    => now(),
+            'end_time'      => now(),
+            'status'        => appointmentStatus::SCHEDULED,
+            'description'   => request('description'),
+        ]);
+            return response()->json([
+                'message'   => 'Successfully created',
+            ]);
+    }
 }

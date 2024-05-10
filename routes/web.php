@@ -31,5 +31,6 @@ Route::delete('/api/users',[UserController::class,'bulkDelete']);
 
 Route::get('/api/appointments', [AppointmentController::class, 'index']);
 Route::get('/api/appointments-status',[AppointmentController::class,'statusWithCount']);
+Route::post('/api/appointments/create',[AppointmentController::class,'store']);
 
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)');
