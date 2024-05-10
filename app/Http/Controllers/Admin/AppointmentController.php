@@ -29,4 +29,15 @@ class AppointmentController extends Controller
                     ]
                 ]);
     }
+
+    public function statusWithCount()
+    {
+        $cases = appointmentStatus::cases();
+            return collect($cases)->map(fn ($case) => [
+                'name'  => $case->name,
+                'value' => $case->value,
+                'count' => Appointment::where('status', $case->value)->count(),
+                'color' => appointmentStatus::from($case->value)->color()
+            ]);
+    }
 }
