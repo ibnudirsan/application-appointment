@@ -2,7 +2,9 @@
 import { onMounted, ref } from 'vue';
 
 const selectedAppointmentStatus = ref('all');
+const selectedDateRange = ref('today');
 const totalAppointmentsCout = ref(0);
+const totalUsersCount = ref(0);
 
 const getAppointmentsCount = () => {
     axios
@@ -19,8 +21,23 @@ const getAppointmentsCount = () => {
         });
 }
 
+const getUsersCount = () => {
+    axios.get('/api/count/users',{
+        params: {
+            date_range: selectedDateRange.value
+        }
+    })
+    .then((response) => {
+        totalUsersCount.value = response.data.totalUsersCount;
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+}
+
 onMounted(() => {
     getAppointmentsCount();
+    getUsersCount();
 })
 </script>
 <template>
@@ -73,15 +90,15 @@ onMounted(() => {
                     <div class="small-box bg-info">
                         <div class="inner">
                             <div class="d-flex justify-content-between">
-                                <h3>0</h3>
-                                <select style="height: 2rem; outline: 2px solid transparent;"
+                                <h3>{{ totalUsersCount }}</h3>
+                                <select v-model="selectedDateRange" @change="getUsersCount()" style="height: 2rem; outline: 2px solid transparent;"
                                     class="px-1 rounded border-0">
-                                    <option value="TODAY">Today</option>
-                                    <option value="30">30 days</option>
-                                    <option value="60">60 days</option>
-                                    <option value="360">360 days</option>
-                                    <option value="MTD">Month to Date</option>
-                                    <option value="YTD">Year to Date</option>
+                                    <option value="today">Today</option>
+                                    <option value="30_days">30 days</option>
+                                    <option value="60_days">60 days</option>
+                                    <option value="360_days">360 days</option>
+                                    <option value="month_to_date">Month to Date</option>
+                                    <option value="year_to_date">Year to Date</option>
                                 </select>
                             </div>
                             <p>Users</p>

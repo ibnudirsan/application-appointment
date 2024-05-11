@@ -61,4 +61,32 @@ class UserController extends Controller
         User::whereIn('id',request('ids'))->delete();
             return response()->json(['message'  => 'Users deleted successfully!']);
     }
+
+    public function usersCount()
+    {
+        $totalUsersCount = User::query()
+                                ->when(request('date_range') === "today", function ($query) {
+                                    $query->whereBetween('created_at', [now()->today(), now()]);
+                                })
+                                ->when(request('date_range') === "30_days", function ($query) {
+                                    $query->whereBetween('created_at', [now()->subDays(30), now()]);
+                                })
+                                ->when(request('date_range') === "60_days", function ($query) {
+                                    $query->whereBetween('created_at', [now()->subDays(60), now()]);
+                                })
+                                ->when(request('date_range') === "360_days", function ($query) {
+                                    $query->whereBetween('created_at', [now()->subDays(360), now()]);
+                                })
+                                ->when(request('date_range') === "month_to_date", function ($query) {
+                                    $query->whereBetween('created_at', [now()->firstOfMonth(), now()]);
+                                })
+                                ->when(request('date_range') === "year_to_date", function ($query) {
+                                    $query->whereBetween('created_at', [now()->firstOfYear(), now()]);
+                                })
+                                ->count();
+
+        return response()->json([
+            'totalUsersCount' => $totalUsersCount
+        ]);
+    }
 }
