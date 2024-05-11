@@ -103,4 +103,22 @@ class AppointmentController extends Controller
                 'message'   => 'Successfully deleted',
             ], 200);
     }
+
+    public function appointmentsCount()
+    {
+        $totalAppointmentsCount = Appointment::query()
+                ->when(request('status') === 'scheduled', function ($query) {
+                    $query->where('status', appointmentStatus::SCHEDULED);
+                })
+                ->when(request('status') === 'confirmed', function ($query) {
+                    $query->where('status', appointmentStatus::COMFIRMED);
+                })
+                ->when(request('status') === 'cancelled', function ($query) {
+                    $query->where('status', appointmentStatus::CANCELLED);
+                })
+                ->count();
+        return response()->json([
+            'totalAppointmentsCout' => $totalAppointmentsCount
+        ]);
+    }
 }
