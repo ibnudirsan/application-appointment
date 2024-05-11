@@ -91,8 +91,8 @@ onMounted(() => {
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Client Name</th>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">Time</th>
+                                        <th scope="col">Start Time</th>
+                                        <th scope="col">End Time</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Options</th>
                                     </tr>
@@ -109,9 +109,9 @@ onMounted(() => {
                                             </span>
                                         </td>
                                         <td>
-                                            <a href="">
+                                            <router-link :to="`/admin/appointments/${appointment.id}/edit`">
                                                 <i class="fa fa-edit mr-2"></i>
-                                            </a>
+                                            </router-link>
 
                                             <a href="">
                                                 <i class="fa fa-trash text-danger"></i>
