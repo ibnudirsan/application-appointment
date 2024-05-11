@@ -23,12 +23,19 @@ const selectedUsers = ref([]);
 const selectAll = ref(false);
 
 const getUsers = (page = 1) => {
-    axios.get(`/api/users?page=${page}`)
-        .then((response) => {
-            users.value = response.data;
-            selectedUsers.value = [];
-            selectAll.value = false;
-        })
+    axios.get(`/api/users?page=${page}`,{
+        params: {
+            search: searchQuery.value
+        }
+    })
+    .then((response) => {
+        users.value = response.data;
+        selectedUsers.value = [];
+        selectAll.value = false;
+    })
+    .catch((error) => {
+        console.log(error);
+    })
 }
 
 const createUserSchema = yup.object({
@@ -153,22 +160,8 @@ const selectAllUsers = () => {
     }
 }
 
-const search = () => {
-    axios.get('/api/users/search', {
-        params: {
-            query: searchQuery.value
-        }
-    })
-        .then(response => {
-            users.value = response.data;
-        })
-        .catch(error => {
-            console.log(error);
-        })
-}
-
 watch(searchQuery, debounce(() => {
-    search();
+    getUsers();
 }, 1000));
 
 onMounted(() => {
@@ -244,13 +237,13 @@ onMounted(() => {
                         </tbody>
                         <tbody v-else>
                             <tr>
-                                <td colspan="6" class="text-center">No users found...</td>
+                                <td colspan="7" class="text-center">No users found...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers" />
+            <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers" :limit="3"/>
         </div>
     </div>
 
