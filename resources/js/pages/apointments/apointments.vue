@@ -2,6 +2,8 @@
 import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
+import Swal from 'sweetalert2';
+import { result } from 'lodash';
 
 const appointmentStatus = ref([]);
 const appointments = ref([]);
@@ -9,20 +11,20 @@ const selectedStatus = ref();
 
 const getAppointmentsStatus = () => {
     axios.get('/api/appointments-status')
-    .then((response) => {
-        appointmentStatus.value = response.data;
-    })
+        .then((response) => {
+            appointmentStatus.value = response.data;
+        })
 }
 
 const getAppointments = (status) => {
     selectedStatus.value = status;
     const params = {};
-    if(status) {
+    if (status) {
         params.status = status;
     }
-        axios.get('/api/appointments',{
-            params: params,
-        })
+    axios.get('/api/appointments', {
+        params: params,
+    })
         .then((response) => {
             appointments.value = response.data;
         })
@@ -34,6 +36,35 @@ const getAppointments = (status) => {
 const appointmentsCount = computed(() => {
     return appointmentStatus.value.map(status => status.count).reduce((acc, value) => acc + value, 0);
 });
+
+const deleteAppointment = (id) => {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            axios.delete(`/api/appointments/${id}`)
+            .then((response) => {
+                getAppointments();
+            })
+            .catch((error) => {
+                appointments.value.data = appointments.value.data.filter(appointment => appointment.id !== id);
+                Swal.fire({
+                    title: "Deleted!",
+                    text: "Your file has been deleted.",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            })
+        }
+    });
+}
 
 onMounted(() => {
     getAppointments();
@@ -74,18 +105,22 @@ onMounted(() => {
                             </RouterLink>
                         </div>
                         <div class="btn-group">
-                            <button @click="getAppointments()" type="button" class="btn" :class="[typeof selectedStatus === 'undefined' ? 'btn btn-secondary' : 'btn btn-default']">
+                            <button @click="getAppointments()" type="button" class="btn"
+                                :class="[typeof selectedStatus === 'undefined' ? 'btn btn-secondary' : 'btn btn-default']">
                                 <span class="mr-1">All</span>
                                 <span class="badge badge-pill badge-info">{{ appointmentsCount }}</span>
                             </button>
-                            <button v-for="status in appointmentStatus" :key="status.id" @click="getAppointments(status.value)" type="button" :class="[selectedStatus === status.value ? 'btn btn-secondary' : 'btn btn-default']">
+                            <button v-for="status in appointmentStatus" :key="status.id"
+                                @click="getAppointments(status.value)" type="button"
+                                :class="[selectedStatus === status.value ? 'btn btn-secondary' : 'btn btn-default']">
                                 <span class="mr-1">{{ status.name }}</span>
-                                <span class="badge badge-pill" :class="`badge-${status.color}`">{{ status.count }}</span>
+                                <span class="badge badge-pill" :class="`badge-${status.color}`">{{ status.count
+                                    }}</span>
                             </button>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body table-responsive">
                             <table class="table table-bordered">
                                 <thead>
                                     <tr>
@@ -113,7 +148,7 @@ onMounted(() => {
                                                 <i class="fa fa-edit mr-2"></i>
                                             </router-link>
 
-                                            <a href="">
+                                            <a href="#" @click="$event => deleteAppointment(appointment.id)">
                                                 <i class="fa fa-trash text-danger"></i>
                                             </a>
                                         </td>

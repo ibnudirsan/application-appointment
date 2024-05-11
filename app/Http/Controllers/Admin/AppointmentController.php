@@ -94,4 +94,13 @@ class AppointmentController extends Controller
                 'message'   => 'Successfully updated',
             ]);
     }
+
+    public function destroy(Appointment $appointment)
+    {
+        $appointment->delete();
+            return response()->json([
+                'success'   => true,
+                'message'   => 'Successfully deleted',
+            ], 200);
+    }
 }
