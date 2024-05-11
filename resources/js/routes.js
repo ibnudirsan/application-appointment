@@ -1,3 +1,4 @@
+import Login from "./pages/auth/Login.vue";
 import Dashboard from "./components/Dashboard.vue";
 import ListAppointments from "./pages/apointments/apointments.vue";
 import AppointmentsForm from "./pages/apointments/apointmentForm.vue";
@@ -6,6 +7,12 @@ import ListSettings from "./pages/settings/UpdateSetting.vue";
 import UpdateProfile from "./pages/profile/UpdateProfile.vue";
 
 export default [
+    {
+        path: '/login',
+        name: 'admin.login',
+        component: Login
+    },
+
     {
         path: '/admin/dashboard',
         name: 'admin.dashboard',
