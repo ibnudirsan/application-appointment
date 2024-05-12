@@ -5,6 +5,7 @@ import { useToastr } from '@/toastr';
 
 const setting = ref([]);
 const toastr = useToastr();
+const errors = ref();
 
 const getSetting = () => {
     axios.get('/api/settings')
@@ -17,13 +18,16 @@ const getSetting = () => {
 }
 
 const updateSettings = () => {
+    errors.value = [];
     axios.post('/api/settings', setting.value)
     .then((response) => {
         getSetting();
         toastr.success('Settings updated successfully!');
     })
     .catch((error) => {
-        console.log(error);
+        if(error.response && error.response.status === 422) {
+            errors.value = error.response.data.errors;
+        }
     })
 }
 
@@ -68,6 +72,7 @@ onMounted(() => {
                                             <label for="appName">App Display Name</label>
                                             <input v-model="setting.app_name" type="text" class="form-control" id="appName"
                                                 placeholder="Enter app display name">
+                                                <span v-if="errors && errors.app_name" class="text-danger text-sm">{{ errors.app_name[0] }}</span>
                                         </div>
                                         <div class="form-group">
                                             <label for="dateFormat">Date Format</label>
@@ -78,11 +83,13 @@ onMounted(() => {
                                                 <option value="Month DD, YYYY">Month DD, YYYY</option>
                                                 <option value="DD Month YYYY">DD Month YYYY</option>
                                             </select>
+                                            <span v-if="errors && errors.date_format" class="text-danger text-sm">{{ errors.date_format[0] }}</span>
                                         </div>
                                         <div class="form-group">
                                             <label for="paginationLimit">Pagination Limit</label>
                                             <input v-model="setting.pagination_limit" type="text" class="form-control" id="paginationLimit"
                                                 placeholder="Enter pagination limit">
+                                                <span v-if="errors && errors.pagination_limit" class="text-danger text-sm">{{ errors.pagination_limit[0] }}</span>
                                         </div>
                                     </div>
 
