@@ -4,10 +4,12 @@ import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import Swal from 'sweetalert2';
 import { result } from 'lodash';
+import Preloader from '../../components/Preloader.vue';
 
 const appointmentStatus = ref([]);
 const appointments = ref([]);
 const selectedStatus = ref();
+const loading = ref(false);
 
 const getAppointmentsStatus = () => {
     axios.get('/api/appointments-status')
@@ -17,6 +19,7 @@ const getAppointmentsStatus = () => {
 }
 
 const getAppointments = (status) => {
+    loading.value = true;
     selectedStatus.value = status;
     const params = {};
     if (status) {
@@ -27,6 +30,7 @@ const getAppointments = (status) => {
     })
         .then((response) => {
             appointments.value = response.data;
+            loading.value = false;
         })
         .catch((error) => {
             console.log(error);
@@ -38,9 +42,9 @@ const appointmentsCount = computed(() => {
 });
 
 const updateAppointmentsStatusCount = (id) => {
-   const CountAppointmentStatusDelete = appointments.value.data.find(appointment => appointment.id === id).status.name;
-   const StatusUpdate = appointmentStatus.value.find(status => status.name === CountAppointmentStatusDelete);
-   StatusUpdate.count--;
+    const CountAppointmentStatusDelete = appointments.value.data.find(appointment => appointment.id === id).status.name;
+    const StatusUpdate = appointmentStatus.value.find(status => status.name === CountAppointmentStatusDelete);
+    StatusUpdate.count--;
 
 }
 
@@ -56,20 +60,20 @@ const deleteAppointment = (id) => {
     }).then((result) => {
         if (result.isConfirmed) {
             axios.delete(`/api/appointments/${id}`)
-            .then((response) => {
-                updateAppointmentsStatusCount(id);
-                getAppointments();
-            })
-            .catch((error) => {
-                appointments.value.data = appointments.value.data.filter(appointment => appointment.id !== id);
-                Swal.fire({
-                    title: "Deleted!",
-                    text: "Your file has been deleted.",
-                    icon: "success",
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            })
+                .then((response) => {
+                    updateAppointmentsStatusCount(id);
+                    getAppointments();
+                })
+                .catch((error) => {
+                    appointments.value.data = appointments.value.data.filter(appointment => appointment.id !== id);
+                    Swal.fire({
+                        title: "Deleted!",
+                        text: "Your file has been deleted.",
+                        icon: "success",
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                })
         }
     });
 }
@@ -169,4 +173,5 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <Preloader :loading="loading"/>
 </template>

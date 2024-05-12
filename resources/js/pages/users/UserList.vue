@@ -7,6 +7,7 @@ import UserListItem from './UserListItem.vue';
 import axios from 'axios';
 import { debounce } from 'lodash';
 import { Bootstrap4Pagination } from 'laravel-vue-pagination';
+import Preloader from '../../components/Preloader.vue';
 
 const userIdBeingDelete = ref(null);
 const users = ref({ 'data': [] });
@@ -21,8 +22,10 @@ const toastr = useToastr();
 const searchQuery = ref(null);
 const selectedUsers = ref([]);
 const selectAll = ref(false);
+const loading = ref(false);
 
 const getUsers = (page = 1) => {
+    loading.value = true;
     axios.get(`/api/users?page=${page}`,{
         params: {
             search: searchQuery.value
@@ -32,6 +35,7 @@ const getUsers = (page = 1) => {
         users.value = response.data;
         selectedUsers.value = [];
         selectAll.value = false;
+        loading.value = false;
     })
     .catch((error) => {
         console.log(error);
@@ -326,4 +330,5 @@ onMounted(() => {
             </div>
         </div>
     </div>
+    <Preloader :loading="loading"/>
 </template>
