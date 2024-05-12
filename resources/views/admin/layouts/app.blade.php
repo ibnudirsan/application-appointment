@@ -201,6 +201,15 @@
                             </router-link>
                         </li>
 
+                        <li class="nav-item">
+                            <router-link to="/admin/settings" active-class="active" class="nav-link">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>
+                                    Setting
+                                </p>
+                            </router-link>
+                        </li>
+
 
                         <li class="nav-item">
                             <form method="POST" action="{{ route('logout') }}" class="nav-link">

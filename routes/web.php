@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/appointments/{appointment}/edit', [AppointmentController::class, 'edit']);
     Route::put('/api/appointments/{appointment}/update', [AppointmentController::class, 'update']);
     Route::delete('/api/appointments/{appointment}', [AppointmentController::class, 'destroy']);  
-    Route::get('/api/status/appointments',[AppointmentController::class,'appointmentsCount']);  
+    Route::get('/api/status/appointments',[AppointmentController::class,'appointmentsCount']);
+
+    Route::get('/api/settings',[SettingController::class,'index']);
+    Route::post('/api/settings',[SettingController::class,'store']);
 });
 
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)')->middleware('auth');
