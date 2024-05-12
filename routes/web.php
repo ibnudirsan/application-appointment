@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/profile',[ProfileController::class,'index']);
     Route::put('/api/profile',[ProfileController::class,'update']);
+    Route::post('/api/profile-picture',[ProfileController::class,'updateProfilePicture']);
 });
 
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)')->middleware('auth');

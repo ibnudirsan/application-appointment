@@ -10,6 +10,8 @@ const form = ref({
 
 const toastr = useToastr();
 const errors = ref([]);
+const fileInput = ref(null);
+const profilePictureUrl = ref(null);
 
 const getUser = () => {
     axios.get('/api/profile')
@@ -32,6 +34,26 @@ const updateProfile = () => {
         if(error.response && error.response.status === 422) {
             errors.value = error.response.data.errors;
         }
+    })
+}
+
+const openFileInput = () => {
+    fileInput.value.click();
+}
+
+const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    profilePictureUrl.value = URL.createObjectURL(file);
+
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+
+    axios.post('/api/profile-picture', formData)
+    .then((response) => {
+        toastr.success('Profile picture updated successfully!');
+    })
+    .catch((error) => {
+        console.log(error);
     })
 }
 
@@ -65,8 +87,8 @@ onMounted(() => {
                     <div class="card card-primary card-outline">
                         <div class="card-body box-profile">
                             <div class="text-center">
-                                <input type="file" class="d-none">
-                                <img class="profile-user-img img-circle" src="/noimage.png" alt="User profile picture">
+                                <input @change="handleFileChange" ref="fileInput" type="file" class="d-none">
+                                <img @click="openFileInput" class="profile-user-img img-circle" :src="profilePictureUrl ? profilePictureUrl : form.avatar" alt="User profile picture">
                             </div>
 
                             <h3 class="profile-username text-center">{{ form.name }}</h3>
@@ -158,3 +180,10 @@ onMounted(() => {
         </div>
     </div>
 </template>
+
+<style>
+.profile-user-img:hover {
+    background-color: blue;
+    cursor: pointer;
+}
+</style>
