@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Fortify\UpdateUserPassword;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -38,5 +39,17 @@ class ProfileController extends Controller
                             'message'   => 'Successfully profile picture updated',
                         ]);
         }
+    }
+
+    public function changePassword(Request $request, UpdateUserPassword $updateUserPassword)
+    {
+        $updateUserPassword->update(auth()->user(), [
+            'current_password'      => $request->current_password,
+            'password'              => $request->password,
+            'password_confirmation' => $request->passwordConfirmation,
+        ]);
+            return response()->json([
+                'message'   => 'Successfully password updated',
+            ]);
     }
 }
