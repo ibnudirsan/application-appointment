@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AppointmentController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ApplicationController;
@@ -41,6 +42,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/settings',[SettingController::class,'index']);
     Route::post('/api/settings',[SettingController::class,'store']);
+
+    Route::get('/api/profile',[ProfileController::class,'index']);
+    Route::put('/api/profile',[ProfileController::class,'update']);
 });
 
 Route::get('{view}', ApplicationController::class)->where('view', '(.*)')->middleware('auth');
