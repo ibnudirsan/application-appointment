@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class SettingController extends Controller
 {
     public function index()
     {
-        return Setting::pluck('value', 'key')->toArray();
+        $settings = Setting::pluck('value', 'key')->toArray();
+        if(! $settings) {
+            return config('setting.default');
+        }
+            return $settings;
     }
 
     public function store()
@@ -22,10 +27,14 @@ class SettingController extends Controller
         ]);
 
         foreach ($settings as $key => $value) {
-            Setting::where('key', $key)->update(['value' => $value]);
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
         }
-            return response()->json([
-                'success'   => true
-            ]);
+            Cache::flush('settings');
+                return response()->json([
+                    'success'   => true
+                ]);
     }
 }

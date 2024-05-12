@@ -55,7 +55,7 @@ const toggleSelection = () => {
                 <option v-for="role in roles" :value="role.value" :key="role.value" :selected="user.role === role.name">{{ role.name }}</option>
             </select>
         </td>
-        <td>{{ formatDate(user.created_at) }}</td>
+        <td>{{ user.formatted_created_at }}</td>
         <td>
             <a href="#" class="btn btn-primary btn-sm mr-2" @click="$emit('editUser', user)">
                 <i class="fas fa-edit"></i>

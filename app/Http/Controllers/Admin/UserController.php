@@ -14,7 +14,7 @@ class UserController extends Controller
                 ->when(request('search'), function ($query) {
                     return $query->where('name', 'like', '%' . request('search') . '%');
                 });
-        return $user->paginate(10);
+        return $user->paginate(setting('pagination_limit'));
     }
 
     public function store()
