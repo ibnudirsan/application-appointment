@@ -1,4 +1,14 @@
 <script setup>
+const logout = () => {
+    axios.post('/logout')
+        .then((response) => {
+            window.location.href = '/login';
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+}
+
 defineProps({
     authUser: Object,
     setting: Object
