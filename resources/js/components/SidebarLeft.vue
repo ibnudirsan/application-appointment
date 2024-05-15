@@ -1,4 +1,8 @@
 <script setup>
+import { useAuthUserStore } from '../store/AuthUserStore';
+
+const AuthUserStore = useAuthUserStore();
+
 const logout = () => {
     axios.post('/logout')
         .then((response) => {
@@ -34,7 +38,7 @@ defineProps({
                 </div>
                 <div class="info">
                     <a href="#" class="d-block">
-                        {{ authUser?.name }}
+                        {{ AuthUserStore.user.name }}
                     </a>
                 </div>
             </div>
