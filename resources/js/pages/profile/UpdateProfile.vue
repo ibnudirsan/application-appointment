@@ -7,7 +7,6 @@ const authUserStore = useAuthUserStore();
 const toastr = useToastr();
 const errors = ref([]);
 const fileInput = ref(null);
-const profilePictureUrl = ref(null);
 const changePasswordForm = reactive({
     current_password: '',
     password: '',
@@ -36,7 +35,8 @@ const openFileInput = () => {
 
 const handleFileChange = (event) => {
     const file = event.target.files[0];
-    profilePictureUrl.value = URL.createObjectURL(file);
+    
+    authUserStore.user.avatar = URL.createObjectURL(file);
 
     const formData = new FormData();
     formData.append('profile_picture', file);
@@ -93,7 +93,7 @@ const handleChangePassword = () => {
                         <div class="card-body box-profile">
                             <div class="text-center">
                                 <input @change="handleFileChange" ref="fileInput" type="file" class="d-none">
-                                <img @click="openFileInput" class="profile-user-img img-circle" :src="profilePictureUrl ? profilePictureUrl : authUserStore.user.avatar" alt="User profile picture">
+                                <img @click="openFileInput" class="profile-user-img img-circle" :src="authUserStore.user.avatar" alt="User profile picture">
                             </div>
 
                             <h3 class="profile-username text-center">{{ authUserStore.user.name }}</h3>
