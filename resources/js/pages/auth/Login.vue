@@ -1,13 +1,16 @@
 <script setup>
-import { RouterLink } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { reactive, ref } from 'vue';
 import axios from 'axios';
+import { useAuthUserStore } from '../../store/AuthUserStore';
 
 const form = reactive({
     email: '',
     password: '',
 });
 
+const authUserStore = useAuthUserStore();
+const router = useRouter();
 const errorMessage = ref('');
 const loading = ref(false);
 
@@ -16,7 +19,8 @@ const handleSubmit = () => {
     errorMessage.value = '';
     axios.post('/login', form)
     .then((response) => {
-        window.location.href = '/admin/dashboard';
+        router.push('/admin/dashboard');
+        authUserStore.user.name = "Test";
     })
     .catch((error) => {
         errorMessage.value = error.response.data.message

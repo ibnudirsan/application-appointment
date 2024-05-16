@@ -6,43 +6,16 @@ import SidebarRight from './components/SidebarRight.vue';
 import AppFooter from './components/AppFooter.vue';
 import { useAuthUserStore } from './store/AuthUserStore';
 
-const setting = ref(null);
-const authUser = ref(null);
+
 const authUserStore = useAuthUserStore();
-authUserStore.getAuthUser();
-
-const fetchSettings = () => {
-    axios.get('/api/settings')
-        .then((response) => {
-            setting.value = response.data;
-        })
-        .catch((error) => {
-            console.log(error);
-        })
-}
-
-const fetchAuthUser = () => {
-    axios.get('/api/profile')
-        .then((response) => {
-            authUser.value = response.data;
-        })
-        .catch((error) => {
-            console.log(error);
-        })
-}
-
-onMounted(() => {
-    fetchSettings();
-    fetchAuthUser();
-})
 
 </script>
 <template>
-    <div class="wrapper" id="app">
+    <div v-if="authUserStore.user.name !== ''" class="wrapper" id="app">
 
         <AppNavbar />
 
-        <SidebarLeft :authUser="authUser" :setting="setting" />
+        <SidebarLeft />
 
         <div class="content-wrapper">
             <router-view></router-view>
@@ -50,6 +23,10 @@ onMounted(() => {
         
         <SidebarRight />
 
-        <AppFooter :setting="setting"/>
+        <AppFooter />
+    </div>
+
+    <div v-else class="login-page">
+        <router-view></router-view>
     </div>
 </template>
