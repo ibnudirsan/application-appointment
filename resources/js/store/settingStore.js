@@ -8,8 +8,8 @@ export const useSettingStore = defineStore("SettingStore", () => {
     });
     const theme = useStorage('SettingStore:theme', ref('light'));
 
-    const getSetting = () => {
-        axios.get("/api/settings")
+    const getSetting = async () => {
+      await axios.get("/api/settings")
             .then((response) => {
                 settings.value = response.data;
             })

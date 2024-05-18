@@ -19,24 +19,17 @@ const router = createRouter({
     history: createWebHistory()
 });
 
-router.beforeEach((to, from) => {
+router.beforeEach (async (to, from) => {
     const authUserStore = useAuthUserStore();
     if(authUserStore.user.name === '' && to.name !== 'admin.login') {
-        authUserStore.getAuthUser();
         const settingStore = useSettingStore();
-        settingStore.getSetting();
+       await Promise.all([
+            authUserStore.getAuthUser(),
+            settingStore.getSetting()
+        ]);
     }
 });
 
 app.use(pinia);
 app.use(router);
-
-// if(window.location.pathname === '/login') {
-//     const currentApp = createApp({});
-//     currentApp.component('Login', Login);
-//     currentApp.mount('#login');
-// } else {
-//     app.mount('#app')
-// }
-
 app.mount('#app');
