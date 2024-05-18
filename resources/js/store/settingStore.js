@@ -1,9 +1,12 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
+import { useStorage } from '@vueuse/core'
 
 export const useSettingStore = defineStore("SettingStore", () => {
     const settings = ref({
         app_name: "",
     });
+    const theme = useStorage('SettingStore:theme', ref('light'));
 
     const getSetting = () => {
         axios.get("/api/settings")
@@ -14,5 +17,10 @@ export const useSettingStore = defineStore("SettingStore", () => {
                 console.log(error);
             });
     };
-    return { settings, getSetting };
+
+    const changeTheme = () => {
+        theme.value = theme.value === 'light' ? 'dark' : 'light';
+    }
+    
+    return { settings, getSetting, theme, changeTheme };
 });

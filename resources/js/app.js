@@ -26,7 +26,8 @@ router.beforeEach((to, from) => {
         const settingStore = useSettingStore();
         settingStore.getSetting();
     }
-})
+});
+
 app.use(pinia);
 app.use(router);
 

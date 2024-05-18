@@ -20,7 +20,6 @@ const handleSubmit = () => {
     axios.post('/login', form)
     .then((response) => {
         router.push('/admin/dashboard');
-        authUserStore.user.name = "Test";
     })
     .catch((error) => {
         errorMessage.value = error.response.data.message
